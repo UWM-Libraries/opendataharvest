@@ -635,34 +635,26 @@ class Aardvark:
         self.dct_references_s = json.dumps(references).replace(" ", "")
 
     def _process_temporal_coverage(self, dataset_dict):
+        self.gbl_indexYear_im = []
+        self.dct_temporal_sm = []
+
         if "modified" in dataset_dict:
             try:
                 index_date = parser.parse(dataset_dict["modified"])
                 index_year = int(index_date.year)
-            except ImportError:
-                index_year = int(dataset_dict["modified"][:4])
+                self.gbl_indexYear_im = [index_year]
+                self.dct_temporal_sm = [f"Modified {index_year}"]
             except Exception as e:
-                logging.error(f"An error occurred: {e}")
-
-            self.gbl_indexYear_im = [index_year]
-            self.dct_temporal_sm = [f"Modified {index_year}"]
-        else:
-            self.gbl_indexYear_im = []
+                logging.warning(f"Unable to parse 'modified' date: {dataset_dict['modified']} - {e}")
 
         if "issued" in dataset_dict:
             try:
                 index_date = parser.parse(dataset_dict["issued"])
                 index_year = int(index_date.year)
-            except ImportError:
-                index_year = int(dataset_dict["issued"][:4])
-            except Exception as e:
-                logging.error("Problem processing the issued date.")
-
-            self.gbl_indexYear_im.append(index_year)
-            if self.dct_temporal_sm:
-                self.dct_temporal_sm[0] = f"Issued {index_year}"
-            else:
+                self.gbl_indexYear_im.append(index_year)
                 self.dct_temporal_sm = [f"Issued {index_year}"]
+            except Exception as e:
+                logging.warning(f"Unable to parse 'issued' date: {dataset_dict['issued']} - {e}")
 
     def to_dict(self):
         """
