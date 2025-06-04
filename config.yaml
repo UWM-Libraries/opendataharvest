@@ -139,7 +139,7 @@ DCAT_Sites:
       - CollectionName: "Wisconsin Open Data Sites"
       - CollectionName: "Wisconsin State Agencies"
     CreatedBy: "Wisconsin Legislative Technology Services Bureau"
-    SiteURL: "https://data-ltsb.opendata.arcgis.com/api/feed/dcat-us/1.1.json"
+    SiteURL: "https://gis-ltsb.hub.arcgis.com/api/feed/dcat-us/1.1.json"
     SiteName: "WILTSB"
     DefaultBbox: "Wisconsin"
     DatasetPrefix: ""
@@ -147,11 +147,12 @@ DCAT_Sites:
     DatasetPostfix: ", WI LTSB"
     AppList: ""
     SkipList:
-      - UUID: "766f969721fd42e38bd543a73b00983a"
-      - UUID: "064f4faea3fb44e887fc14093538174c"
+      - UUID: "d3a0634484a54a0ba3ec775811bc8333"
       - UUID: "fd0ff01a007b49cd8a1ccdd35283f2ec"
       - UUID: "5a68df5711084d0fbcc2f2fb9ab5bf11"
+      - UUID: "766f969721fd42e38bd543a73b00983a"
       - UUID: "b50132e87b7f4b8cb728ffdf44bb1a1f"
+      - UUID: "064f4faea3fb44e887fc14093538174c"
 
   WiDNR_OpenData: 
     CreatedBy: "Wisconsin Department of Natural Resources"
