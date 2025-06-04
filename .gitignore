@@ -1,3 +1,4 @@
 OpenDataSites.txt
 /output_md/*
 !/output_md/.keep
+/venv/
