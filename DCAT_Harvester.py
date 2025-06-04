@@ -32,13 +32,13 @@ import html
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import quote
-from typing import List
+from typing import List, Optional, Any
 
 import requests
 import yaml
 from dateutil import parser
 import jsonschema
-from jsonschema import validate
+from jsonschema import validate, ValidationError
 
 config_file = r"config/opendataharvest.yaml"
 
@@ -178,7 +178,7 @@ class Site:
         setattr(self, key, value)
 
 
-def get_site_data(site: str, details: dict) -> dict:
+def get_site_data(site: str, details: dict[str, Any]) -> Optional[dict[str, Any]]:
     """Fetch the site data with retries."""
     for i in range(MAXRETRY):
         try:
@@ -479,7 +479,7 @@ class AardvarkDataProcessor:
     def validate_json(json_data, schema):
         try:
             validate(instance=json_data, schema=schema)
-        except jsonschema.exceptions.ValidationError as err:
+        except ValidationError as err:
             return False, err
         return True, None
 
@@ -706,7 +706,7 @@ class Aardvark:
         # Format the dictionary into a string for printing.
         return "\n".join(f"{key}: {value}" for key, value in obj_dict.items())
 
-    def toJSON(self):
+    def toJSON(self) -> Optional[str]:
         aardvark_dict = self.to_dict()  # Use the new to_dict method
         json_dump = json.dumps(aardvark_dict)
         schema = AardvarkDataProcessor.load_schema()
@@ -753,10 +753,15 @@ def main():
             try:
                 new_aardvark_object = Aardvark(dataset, website)
                 new_aardvark_objects.append(new_aardvark_object)
-                newfile = f"{new_aardvark_object.id}.json"
-                newfilePath = OUTPUTDIR / newfile
-                with open(newfilePath, "w", encoding="utf-8") as f:
-                    f.write(new_aardvark_object.toJSON())
+                json_str = new_aardvark_object.toJSON()
+
+                if json_str is not None:
+                    newfile = f"{new_aardvark_object.id}.json"
+                    newfilePath = OUTPUTDIR / newfile
+                    with open(newfilePath, "w", encoding="utf-8") as f:
+                        f.write(json_str)
+                else:
+                    logging.warning(f"Skipping file write: {new_aardvark_object.id} failed validation.")
             except InitializationError as e:
                 logging.info(str(e))
 
