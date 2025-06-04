@@ -91,6 +91,12 @@ logging.basicConfig(
 dt = datetime.now().strftime(r"%Y-%m-%d %H:%M:%S")
 logging.warning(f"Script running at {dt}")
 
+def is_placeholder(value: str) -> bool:
+    """
+    Returns True if the string appears to be a templated placeholder like {{something}}, False otherwise.
+    """
+    return isinstance(value, str) and value.strip().startswith("{{") and value.strip().endswith("}}")
+
 
 class Site:
     """
@@ -603,11 +609,20 @@ class Aardvark:
             logging.warning(f"No spatial information found for: {self.id}")
             return
 
+        spatial_str = dataset_dict["spatial"]
         defaultBbox = AardvarkDataProcessor.default_bbox(website)
+
+        if is_placeholder(spatial_str):
+            logging.warning(
+                f"Placeholder spatial extent found for: {self.id} - {spatial_str}"
+            )
+            self.locn_geometry = self.dcat_bbox = defaultBbox["envelope"]
+            logging.warning("Using default envelope for the website.\n")
+            return
 
         try:
             processed_spatial = AardvarkDataProcessor.process_dcat_spatial(
-                dataset_dict["spatial"], defaultBbox
+                spatial_str, defaultBbox
             )
             self.locn_geometry = self.dcat_bbox = processed_spatial
         except ValueError as e:
@@ -621,6 +636,7 @@ class Aardvark:
                 logging.warning("Using default envelope for the website.\n")
             else:
                 logging.warning(f"No default bounding box set for {website}")
+
 
     def _process_distributions(self, dataset_dict):
         if "distribution" not in dataset_dict:
@@ -638,23 +654,29 @@ class Aardvark:
         self.gbl_indexYear_im = []
         self.dct_temporal_sm = []
 
-        if "modified" in dataset_dict:
+        modified_str = dataset_dict.get("modified", "")
+        if is_placeholder(modified_str):
+            logging.warning(f"Placeholder found in 'modified' field: {modified_str}")
+        elif modified_str:
             try:
-                index_date = parser.parse(dataset_dict["modified"])
+                index_date = parser.parse(modified_str)
                 index_year = int(index_date.year)
                 self.gbl_indexYear_im = [index_year]
                 self.dct_temporal_sm = [f"Modified {index_year}"]
             except Exception as e:
-                logging.warning(f"Unable to parse 'modified' date: {dataset_dict['modified']} - {e}")
+                logging.warning(f"Unable to parse 'modified' date: {modified_str} - {e}")
 
-        if "issued" in dataset_dict:
+        issued_str = dataset_dict.get("issued", "")
+        if is_placeholder(issued_str):
+            logging.warning(f"Placeholder found in 'issued' field: {issued_str}")
+        elif issued_str:
             try:
-                index_date = parser.parse(dataset_dict["issued"])
+                index_date = parser.parse(issued_str)
                 index_year = int(index_date.year)
                 self.gbl_indexYear_im.append(index_year)
                 self.dct_temporal_sm = [f"Issued {index_year}"]
             except Exception as e:
-                logging.warning(f"Unable to parse 'issued' date: {dataset_dict['issued']} - {e}")
+                logging.warning(f"Unable to parse 'issued' date: {issued_str} - {e}")
 
     def to_dict(self):
         """

@@ -2,4 +2,5 @@ OpenDataSites.txt
 /output_md/*
 !/output_md/.keep
 /venv/
-log/opendataharvest.log
+/log/*
+!/log/.keep
