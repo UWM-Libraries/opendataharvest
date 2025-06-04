@@ -40,7 +40,7 @@ from dateutil import parser
 import jsonschema
 from jsonschema import validate, ValidationError
 
-config_file = r"config/opendataharvest.yaml"
+config_file = r"config.yaml"
 
 try:
     with open(config_file, "r", encoding="utf-8") as file:
